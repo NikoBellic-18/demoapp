@@ -10,19 +10,22 @@ console.log('DB cfg =>', {
   user: process.env.PGUSER
 });
 
+// Si PGHOST no es localhost, usamos SSL (requerido por RDS)
+const useSsl = process.env.PGHOST && !['127.0.0.1', 'localhost'].includes(process.env.PGHOST);
+
 const pool = new Pool({
   host: process.env.PGHOST,
   port: Number(process.env.PGPORT),
   database: process.env.PGDATABASE,
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
-  ssl: false
+  ssl: useSsl ? { rejectUnauthorized: false } : false
 });
 
 const app = express();
 
 // Home
-app.get('/', (_, res) => res.send('✅ Demo local (Node + Express + PostgreSQL)'));
+app.get('/', (_, res) => res.send('✅ Demo (Node + Express + PostgreSQL RDS)'));
 
 // Health
 app.get('/health', (_, res) => res.json({ status: 'ok' }));
@@ -39,6 +42,7 @@ app.get('/todos', async (_, res) => {
 });
 
 const port = Number(process.env.PORT) || 8080;
-app.listen(port, () => console.log(`App local escuchando en ${port}`));
+app.listen(port, () => console.log(`App escuchando en ${port}`));
+
 
 
